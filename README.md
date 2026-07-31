@@ -5,14 +5,12 @@
 <h1 align="center">Tarball Manager</h1>
 
 <p align="center">
-  <strong>Install Linux app tarballs as proper desktop applications — with one click.</strong>
+  <strong>Install Linux app tarballs as proper desktop applications with one click.</strong>
 </p>
 
 <p align="center">
   <a href="#features">Features</a> •
   <a href="#installation">Installation</a> •
-  <a href="#usage">Usage</a> •
-  <a href="#how-it-works">How It Works</a> •
   <a href="#building-from-source">Building</a> •
   <a href="#license">License</a>
 </p>
@@ -33,35 +31,53 @@ Many Linux apps like **Zen Browser**, **Blender**, **Firefox**, and **Thunderbir
 - 🚀 **Desktop Integration** — Generates a proper `.desktop` launcher so the app shows up in your application menu
 - 🔗 **PATH Symlink** — Optionally creates a command-line shortcut in your `$PATH`
 - 🗑️ **Clean Uninstall** — Tracks every installed file and removes them all cleanly
-- 🔐 **PolicyKit Integration** — System-wide installs use `pkexec` for a native GNOME password dialog (no `sudo` in terminal)
 
 ## Installation
 
-### From Source (Recommended)
+### Ubuntu / Debian
+
+Download the `.deb` package from the [latest release](https://github.com/ryovoid/tarball-manager/releases/latest) and install it:
+
+```bash
+sudo dpkg -i tarball-manager_0.1.0_amd64.deb
+sudo apt-get install -f   # installs any missing dependencies
+```
+
+To uninstall:
+
+```bash
+sudo dpkg -r tarball-manager
+```
+
+### Fedora
+
+Download the `.rpm` package from the [latest release](https://github.com/ryovoid/tarball-manager/releases/latest) and install it:
+
+```bash
+sudo dnf install ./tarball-manager-0.1.0-1.fc44.noarch.rpm
+```
+
+To uninstall:
+
+```bash
+sudo dnf remove tarball-manager
+```
+
+### From Source
+
+<details>
+<summary>Build from source on any distribution</summary>
 
 **Dependencies:**
-- Python 3.10+
-- GTK 4
-- Libadwaita 1.x
-- Meson & Ninja
-- PolicyKit (for system-wide installs)
 
-On Fedora:
-```bash
-sudo dnf install python3 gtk4-devel libadwaita-devel meson ninja-build polkit
-```
-
-On Ubuntu/Debian:
-```bash
-sudo apt install python3 libgtk-4-dev libadwaita-1-dev meson ninja-build policykit-1
-```
-
-On Arch:
-```bash
-sudo pacman -S python gtk4 libadwaita meson ninja polkit
-```
+| Distribution | Command |
+|---|---|
+| Fedora | `sudo dnf install python3 gtk4-devel libadwaita-devel meson ninja-build polkit` |
+| Ubuntu / Debian | `sudo apt install python3 libgtk-4-dev libadwaita-1-dev meson ninja-build policykit-1` |
+| Arch | `sudo pacman -S python gtk4 libadwaita meson ninja polkit` |
 
 **Build & Install:**
+
 ```bash
 git clone https://github.com/ryovoid/tarball-manager.git
 cd tarball-manager
@@ -70,11 +86,13 @@ ninja -C builddir
 sudo ninja -C builddir install
 ```
 
-Then launch **Tarball Manager** from your application menu
-### Uninstall
+**Uninstall:**
+
 ```bash
 sudo ninja -C builddir uninstall
 ```
+
+</details>
 
 ## Usage
 
@@ -91,29 +109,6 @@ sudo ninja -C builddir uninstall
 | gzip   | `.tar.gz`, `.tgz` |
 | xz     | `.tar.xz`, `.txz` |
 | bzip2  | `.tar.bz2`, `.tbz2` |
-
-## How It Works
-
-```
-┌──────────────┐     ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
-│  1. Extract  │────▶│  2. Detect   │────▶│  3. Install  │────▶│  4. Register │
-│   Tarball    │     │  Binary/Icon │     │    Files     │     │   Desktop    │
-└──────────────┘     └──────────────┘     └──────────────┘     └──────────────┘
-```
-
-**Step 1 — Extract:** Decompresses the tarball to a temp directory and detects the layout (single top-level directory vs flat).
-
-**Step 2 — Detect:** Scans for ELF binaries using magic-byte detection (`\x7fELF`), reads architecture from the ELF header, and ranks candidates by name match, directory depth, and file size. Icons are found by scanning for SVG/PNG files.
-
-**Step 3 — Install:** Copies files to the appropriate location:
-| Scope | App Files | Desktop Entry | Icon | Symlink |
-|-------|-----------|---------------|------|---------|
-| User | `~/.local/share/apps/<name>/` | `~/.local/share/applications/` | `~/.local/share/icons/hicolor/` | `~/.local/bin/` |
-| System | `/opt/<name>/` | `/usr/share/applications/` | `/usr/share/icons/hicolor/` | `/usr/local/bin/` |
-
-**Step 4 — Register:** Generates a `.desktop` file, refreshes the desktop database and icon cache, and records metadata to `~/.local/share/tarball-manager/installs.json` for future uninstalls.
-
-
 
 ## Contributing
 
