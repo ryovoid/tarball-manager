@@ -1,3 +1,0 @@
-[D-BUS Service]
-Name=io.github.ryovoid.TarballManager
-Exec=/usr/bin/tarball_manager --gapplication-service
