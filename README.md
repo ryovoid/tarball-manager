@@ -15,7 +15,7 @@
   <a href="#license">License</a>
 </p>
 
---
+---
 
 Many Linux apps like **Zen Browser**, **Blender**, **Firefox**, and **Thunderbird** ship as bare tarballs — no package manager, no installer. You're expected to extract them, find the binary, set permissions, hunt for an icon, hand-write a `.desktop` file, and figure out where everything goes.
 

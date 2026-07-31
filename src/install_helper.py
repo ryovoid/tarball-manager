@@ -72,8 +72,13 @@ def do_install(data):
     # 3. Install icon
     if icon_src and icon_dest:
         _validate_file_path(icon_dest)
-        os.makedirs(os.path.dirname(icon_dest), exist_ok=True)
-        shutil.copy2(icon_src, icon_dest)
+        if not os.path.isfile(icon_src):
+            # icon_src could be from temp dir (tarball) or user's filesystem (custom)
+            # Just skip if the file doesn't exist — don't fail the whole install
+            pass
+        else:
+            os.makedirs(os.path.dirname(icon_dest), exist_ok=True)
+            shutil.copy2(icon_src, icon_dest)
 
     # 4. Write .desktop file
     _validate_file_path(desktop_path)
