@@ -1,0 +1,6 @@
+# List of source files containing translatable strings.
+# Please keep this file sorted alphabetically.
+data/io.github.ryovoid.TarballManager.desktop.in
+data/io.github.ryovoid.TarballManager.gschema.xml
+data/io.github.ryovoid.TarballManager.metainfo.xml.in
+src/window.py

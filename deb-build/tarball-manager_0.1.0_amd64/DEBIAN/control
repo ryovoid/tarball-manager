@@ -1,0 +1,12 @@
+Package: tarball-manager
+Version: 0.1.0
+Section: utils
+Priority: optional
+Architecture: amd64
+Depends: python3 (>= 3.9), python3-gi, gir1.2-gtk-4.0, gir1.2-adw-1, polkit
+Maintainer: ryovoid
+Description: Install Linux app tarballs as desktop applications
+ Tarball Manager lets you install, manage, and update
+ applications distributed as .tar.gz/.tar.xz archives.
+ It detects executables, creates desktop entries, and
+ handles both user and system-wide installations.

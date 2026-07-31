@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="tarball_manager">
+	<schema id="io.github.ryovoid.TarballManager" path="/io/github/ryovoid/TarballManager/">
+	</schema>
+</schemalist>

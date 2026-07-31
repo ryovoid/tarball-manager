@@ -1,0 +1,133 @@
+<p align="center">
+  <img src="data/icons/hicolor/scalable/apps/io.github.ryovoid.TarballManager.svg" width="128" height="128" alt="Tarball Manager">
+</p>
+
+<h1 align="center">Tarball Manager</h1>
+
+<p align="center">
+  <strong>Install Linux app tarballs as proper desktop applications — with one click.</strong>
+</p>
+
+<p align="center">
+  <a href="#features">Features</a> •
+  <a href="#installation">Installation</a> •
+  <a href="#usage">Usage</a> •
+  <a href="#how-it-works">How It Works</a> •
+  <a href="#building-from-source">Building</a> •
+  <a href="#license">License</a>
+</p>
+
+---
+
+Many Linux apps like **Zen Browser**, **Blender**, **Firefox**, and **Thunderbird** ship as bare tarballs — no package manager, no installer. You're expected to extract them, find the binary, set permissions, hunt for an icon, hand-write a `.desktop` file, and figure out where everything goes.
+
+**Tarball Manager automates all of that.** Select a tarball, review what it found, tweak if needed, and hit install. Done.
+
+## Features
+
+- 🧙 **4-Step Wizard** — Select → Review → Configure → Install
+- 🔍 **Smart Detection** — Automatically finds the main binary (ELF magic-byte detection), app icon, version, and architecture
+- 📂 **Drag & Drop** — Drop a `.tar.gz`, `.tar.xz`, or `.tar.bz2` right onto the window
+- 🏠 **User or System-Wide** — Install just for yourself (`~/.local`) or for all users (`/opt`) with a native password prompt
+- 🖼️ **Icon Handling** — Finds the best icon (SVG preferred) and installs it to the correct `hicolor` theme directory
+- 🚀 **Desktop Integration** — Generates a proper `.desktop` launcher so the app shows up in your application menu
+- 🔗 **PATH Symlink** — Optionally creates a command-line shortcut in your `$PATH`
+- 🗑️ **Clean Uninstall** — Tracks every installed file and removes them all cleanly
+- 🔐 **PolicyKit Integration** — System-wide installs use `pkexec` for a native GNOME password dialog (no `sudo` in terminal)
+
+## Installation
+
+### From Source (Recommended)
+
+**Dependencies:**
+- Python 3.10+
+- GTK 4
+- Libadwaita 1.x
+- Meson & Ninja
+- PolicyKit (for system-wide installs)
+
+On Fedora:
+```bash
+sudo dnf install python3 gtk4-devel libadwaita-devel meson ninja-build polkit
+```
+
+On Ubuntu/Debian:
+```bash
+sudo apt install python3 libgtk-4-dev libadwaita-1-dev meson ninja-build policykit-1
+```
+
+On Arch:
+```bash
+sudo pacman -S python gtk4 libadwaita meson ninja polkit
+```
+
+**Build & Install:**
+```bash
+git clone https://github.com/ryovoid/tarball-manager.git
+cd tarball-manager
+meson setup builddir --prefix=/usr/local
+ninja -C builddir
+sudo ninja -C builddir install
+```
+
+Then launch **Tarball Manager** from your application menu
+### Uninstall
+```bash
+sudo ninja -C builddir uninstall
+```
+
+## Usage
+
+1. **Launch** — Open Tarball Manager from your app menu
+2. **Select** — Drag & drop a tarball onto the window, or click *browse files*
+3. **Review** — The app extracts and analyzes the tarball, showing detected name, version, executable, size, and architecture
+4. **Configure** — Edit the app name, pick the right executable if multiple were found, choose a category, and select user or system-wide scope
+5. **Install** — Hit install and you're done. The app appears in your launcher immediately
+
+### Supported Formats
+
+| Format | Extension |
+|--------|-----------|
+| gzip   | `.tar.gz`, `.tgz` |
+| xz     | `.tar.xz`, `.txz` |
+| bzip2  | `.tar.bz2`, `.tbz2` |
+
+## How It Works
+
+```
+┌──────────────┐     ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+│  1. Extract  │────▶│  2. Detect   │────▶│  3. Install  │────▶│  4. Register │
+│   Tarball    │     │  Binary/Icon │     │    Files     │     │   Desktop    │
+└──────────────┘     └──────────────┘     └──────────────┘     └──────────────┘
+```
+
+**Step 1 — Extract:** Decompresses the tarball to a temp directory and detects the layout (single top-level directory vs flat).
+
+**Step 2 — Detect:** Scans for ELF binaries using magic-byte detection (`\x7fELF`), reads architecture from the ELF header, and ranks candidates by name match, directory depth, and file size. Icons are found by scanning for SVG/PNG files.
+
+**Step 3 — Install:** Copies files to the appropriate location:
+| Scope | App Files | Desktop Entry | Icon | Symlink |
+|-------|-----------|---------------|------|---------|
+| User | `~/.local/share/apps/<name>/` | `~/.local/share/applications/` | `~/.local/share/icons/hicolor/` | `~/.local/bin/` |
+| System | `/opt/<name>/` | `/usr/share/applications/` | `/usr/share/icons/hicolor/` | `/usr/local/bin/` |
+
+**Step 4 — Register:** Generates a `.desktop` file, refreshes the desktop database and icon cache, and records metadata to `~/.local/share/tarball-manager/installs.json` for future uninstalls.
+
+
+
+## Contributing
+
+Contributions are welcome! Feel free to open issues or submit pull requests.
+
+```bash
+# Development setup
+git clone https://github.com/ryovoid/tarball-manager.git
+cd tarball-manager
+meson setup builddir --prefix=$HOME/.local
+ninja -C builddir install
+~/.local/bin/tarball_manager
+```
+
+## License
+
+This project is licensed under the **MIT License** — see the [COPYING](COPYING) file for details.

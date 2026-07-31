@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=Tarball Manager
+Comment=Install Linux app tarballs as desktop applications
+Exec=tarball_manager
+Icon=io.github.ryovoid.TarballManager
+Terminal=false
+Type=Application
+Categories=Utility;System;
+Keywords=tarball;install;package;archive;
+StartupNotify=true
+DBusActivatable=true
