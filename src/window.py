@@ -39,6 +39,8 @@ class TarballManagerWindow(Adw.ApplicationWindow):
         self._analysis = None
         self._current_step = 0
         self._update_mode = None  # app_name when updating
+        self._original_icon = None
+        self._custom_icon_path = None
 
         self._load_css()
         self._build_ui()
@@ -379,6 +381,9 @@ class TarballManagerWindow(Adw.ApplicationWindow):
             return
 
         self._analysis = analysis
+        # Deep-copy so overwriting analysis['icon'] doesn't corrupt backup
+        detected = analysis.get('icon')
+        self._original_icon = dict(detected) if detected else None
         self._populate_review()
         self._populate_configure()
         self._current_step = 1
@@ -463,6 +468,41 @@ class TarballManagerWindow(Adw.ApplicationWindow):
 
         page.append(identity_group)
 
+        # App icon group
+        icon_group = Adw.PreferencesGroup(
+            title=_('App Icon'),
+            description=_('The icon shown in your application menu'),
+        )
+
+        self._cfg_icon_row = Adw.ActionRow(
+            title=_('Icon'),
+            subtitle=_('No icon detected'),
+        )
+        self._cfg_icon_preview = Gtk.Image(pixel_size=32)
+        self._cfg_icon_row.add_prefix(self._cfg_icon_preview)
+
+        # Browse button
+        icon_browse_btn = Gtk.Button(
+            icon_name='document-open-symbolic',
+            tooltip_text=_('Choose a custom icon'),
+            valign=Gtk.Align.CENTER,
+        )
+        icon_browse_btn.connect('clicked', self._on_icon_browse)
+        self._cfg_icon_row.add_suffix(icon_browse_btn)
+
+        # Remove custom icon button (hidden by default)
+        self._cfg_icon_remove_btn = Gtk.Button(
+            icon_name='edit-clear-symbolic',
+            tooltip_text=_('Remove custom icon'),
+            valign=Gtk.Align.CENTER,
+            visible=False,
+        )
+        self._cfg_icon_remove_btn.connect('clicked', self._on_icon_remove)
+        self._cfg_icon_row.add_suffix(self._cfg_icon_remove_btn)
+
+        icon_group.add(self._cfg_icon_row)
+        page.append(icon_group)
+
         # Installation settings group
         install_group = Adw.PreferencesGroup(title=_('Installation Settings'))
 
@@ -501,6 +541,86 @@ class TarballManagerWindow(Adw.ApplicationWindow):
         if a['binary']['all_binaries']:
             # Select the best match (first one)
             self._cfg_exec.set_selected(0)
+
+        # Update icon preview
+        self._custom_icon_path = None
+        self._refresh_icon_preview()
+
+    def _refresh_icon_preview(self):
+        """Updates the icon row to show the current icon status."""
+        icon_info = self._analysis.get('icon') if self._analysis else None
+
+        if self._custom_icon_path:
+            # Custom icon selected by user
+            self._cfg_icon_preview.set_from_file(self._custom_icon_path)
+            self._cfg_icon_row.set_subtitle(
+                _('Custom: %s') % os.path.basename(self._custom_icon_path)
+            )
+            self._cfg_icon_remove_btn.set_visible(True)
+        elif icon_info:
+            # Detected from tarball
+            self._cfg_icon_preview.set_from_file(icon_info['path'])
+            self._cfg_icon_row.set_subtitle(_('Detected from tarball'))
+            self._cfg_icon_remove_btn.set_visible(False)
+        else:
+            # No icon at all
+            self._cfg_icon_preview.set_from_icon_name('application-x-executable')
+            self._cfg_icon_row.set_subtitle(_('No icon — click 📂 to add one'))
+            self._cfg_icon_remove_btn.set_visible(False)
+
+    def _on_icon_browse(self, _btn):
+        """Opens a file chooser for the user to pick a custom icon."""
+        dialog = Gtk.FileDialog(title=_('Select an Icon'))
+        f = Gtk.FileFilter()
+        f.set_name(_('Icon images (PNG, SVG, XPM)'))
+        for p in ('*.png', '*.svg', '*.xpm'):
+            f.add_pattern(p)
+        filters = Gio.ListStore.new(Gtk.FileFilter)
+        filters.append(f)
+        dialog.set_filters(filters)
+        dialog.set_default_filter(f)
+        dialog.open(self, None, self._on_icon_chosen)
+
+    def _on_icon_chosen(self, dialog, result):
+        """Callback when user picks an icon file."""
+        try:
+            f = dialog.open_finish(result)
+            if f:
+                path = f.get_path()
+                ext = os.path.splitext(path)[1].lower()
+
+                # Validate extension — hicolor only supports these
+                if ext not in ('.png', '.svg', '.xpm'):
+                    self._toast_overlay.add_toast(
+                        Adw.Toast(title=_('Unsupported format. Use PNG, SVG, or XPM.'), timeout=4)
+                    )
+                    return
+
+                self._custom_icon_path = path
+
+                # Build an icon info dict matching find_best_icon() format
+                if ext == '.svg':
+                    size_dir = 'scalable'
+                else:
+                    size_dir = '128x128'
+
+                # Override the analysis icon with the custom one
+                self._analysis['icon'] = {
+                    'path': path,
+                    'ext': ext,
+                    'size_dir': size_dir,
+                }
+                self._refresh_icon_preview()
+        except GLib.Error:
+            pass  # User cancelled
+
+    def _on_icon_remove(self, _btn):
+        """Removes the custom icon, reverting to detected or none."""
+        self._custom_icon_path = None
+        # Restore original detected icon (re-run detection)
+        # Since we overwrote analysis['icon'], set to None if no original
+        self._analysis['icon'] = self._original_icon
+        self._refresh_icon_preview()
 
     # ── Page: Install ───────────────────────────────────
 
