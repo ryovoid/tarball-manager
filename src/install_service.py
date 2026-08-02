@@ -31,21 +31,29 @@ def _get_symlink_dir(scope):
 def _find_helper_script():
     """Finds the install_helper.py script.
 
-    Searches in order:
-    1. Installed location (pkgdatadir — share/tarball_manager/)
-    2. Next to this file (development)
+    Searches in order (local-first so dev builds override system packages):
+    1. User-local install (~/.local/share/tarball_manager/)
+    2. Development: next to this file
+    3. System-wide (/usr/local, then /usr)
     """
-    # Installed location (Meson installs it to pkgdatadir root)
-    for prefix in ('/usr', '/usr/local', os.path.expanduser('~/.local')):
-        path = os.path.join(prefix, 'share', 'tarball_manager', 'install_helper.py')
-        if os.path.exists(path):
-            return path
-
-    # Development: next to this file
+    # Development: next to this file (highest priority for dev builds)
     here = os.path.dirname(os.path.abspath(__file__))
     dev_path = os.path.join(here, 'install_helper.py')
     if os.path.exists(dev_path):
         return dev_path
+
+    # User-local install
+    local_path = os.path.join(
+        os.path.expanduser('~/.local'), 'share', 'tarball_manager', 'install_helper.py'
+    )
+    if os.path.exists(local_path):
+        return local_path
+
+    # System-wide installs (RPM/DEB)
+    for prefix in ('/usr/local', '/usr'):
+        path = os.path.join(prefix, 'share', 'tarball_manager', 'install_helper.py')
+        if os.path.exists(path):
+            return path
 
     return None
 
@@ -107,7 +115,10 @@ class InstallService:
         Runs synchronously — call from a thread.
         """
         import tempfile
-        temp_dir = tempfile.mkdtemp(prefix='tarball-manager-')
+        # Use /var/tmp instead of /tmp because /tmp is often a tmpfs (RAM disk)
+        # with limited space. Large tarballs (e.g. JetBrains IDEs at 1.5GB+)
+        # need real disk-backed storage for extraction.
+        temp_dir = tempfile.mkdtemp(prefix='tarball-manager-', dir='/var/tmp')
 
         try:
             if on_progress:
