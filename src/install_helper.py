@@ -36,9 +36,15 @@ def _validate_install_path(path):
 
 
 def _validate_file_path(path):
-    """Ensures a file operation path is inside allowed system directories."""
-    real = os.path.realpath(path)
-    if not any(real.startswith(p) for p in ALLOWED_FILE_PREFIXES):
+    """Ensures a file operation path is inside allowed system directories.
+
+    Uses abspath (not realpath) because we're validating where we intend
+    to WRITE, not where an existing symlink at that location points to.
+    realpath would follow existing symlinks and reject valid paths like
+    /usr/local/bin/zen → /opt/zen/zen during updates.
+    """
+    normalized = os.path.abspath(path)
+    if not any(normalized.startswith(p) for p in ALLOWED_FILE_PREFIXES):
         raise ValueError(f'File path not in allowed directories: {path}')
 
 
