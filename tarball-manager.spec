@@ -1,6 +1,6 @@
 Name:           tarball-manager
-Version:        0.1.4
-Release:        1%{?dist}
+Version:        0.1.5
+Release:        0.test1%{?dist}
 Summary:        Install Linux app tarballs as desktop applications
 
 License:        MIT
@@ -66,6 +66,19 @@ appstream-util validate-relax --nonet \
 %{_datadir}/tarball_manager/
 
 %changelog
+* Wed Sep 02 2026 ryovoid <rp6502293@gmail.com> - 0.1.5-0.test1
+- Test build of the redesigned interface
+- The interface follows the system accent colour and light/dark preference
+  instead of a fixed palette
+- The library lists apps with icons, update badges and search, and takes a
+  dropped tarball anywhere on the window
+- The install wizard keeps Back and Install in view instead of below the
+  fold, and offers to launch the app once it is installed
+- App details lead with the app itself, with Launch and copyable paths
+- Keyboard shortcuts window, Ctrl+N/R/F actions, and the window remembers
+  its size
+- The terminal command row on the details page renders again
+
 * Wed Sep 02 2026 ryovoid <rp6502293@gmail.com> - 0.1.4-1
 - Electron applications that nest their bundle a directory deeper, such as
   Postman, now report their version instead of Unknown
