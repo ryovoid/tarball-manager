@@ -21,6 +21,16 @@
     <color type="primary" scheme_preference="dark">#6366f1</color>
   </branding>
   <releases>
+    <release version="0.1.2" date="2026-08-30">
+      <description translate="no">
+        <p>Fixes for application icons and taskbar identity:</p>
+        <ul>
+          <li>Icon detection no longer picks SVGs that only wrap a bitmap, which installed as a dark square</li>
+          <li>Generated desktop entries carry StartupWMClass, so the running window shows the app icon in the taskbar on Wayland</li>
+          <li>Desktop entries are named after the app id the window reports</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.1.0" date="2026-07-28">
       <description translate="no">
         <p>Initial release</p>

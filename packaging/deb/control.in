@@ -1,0 +1,25 @@
+Package: tarball-manager
+Version: @VERSION@-@REVISION@
+Section: utils
+Priority: optional
+Architecture: all
+Maintainer: ryovoid <rp6502293@gmail.com>
+Installed-Size: @INSTALLED_SIZE@
+Depends: python3 (>= 3.9),
+ python3-gi (>= 3.42),
+ gir1.2-gtk-4.0,
+ gir1.2-adw-1,
+ libglib2.0-bin,
+ desktop-file-utils,
+ hicolor-icon-theme,
+ pkexec | policykit-1
+Recommends: gtk-update-icon-cache
+Homepage: https://github.com/ryovoid/tarball-manager
+Description: Install Linux app tarballs as desktop applications
+ Tarball Manager lets you install, manage, and update applications
+ distributed as .tar.gz, .tar.xz and .tar.bz2 archives.
+ .
+ It detects the application's executable and icon, generates a desktop
+ entry so the app shows up in the application menu, sets up a symlink on
+ PATH for command-line use, and handles both per-user and system-wide
+ installations.

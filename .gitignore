@@ -1,10 +1,26 @@
 # Build output
 build/
 builddir/
+_build/
 dist/
 meson-logs/
 meson-private/
 meson-info/
+.ninja_deps
+.ninja_log
+compile_commands.json
+
+# Packages produced by packaging/build-deb.sh and rpmbuild
+*.deb
+*.rpm
+*.tar.zst
+*.flatpak
+*.AppImage
+
+# Compiled resources and translations
+*.gresource
+*.mo
+po/*.pot
 
 # Python cache and virtual environments
 __pycache__/
