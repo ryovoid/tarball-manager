@@ -21,6 +21,15 @@
     <color type="primary" scheme_preference="dark">#6366f1</color>
   </branding>
   <releases>
+    <release version="0.1.4" date="2026-09-02">
+      <description translate="no">
+        <p>Application version detection fixes:</p>
+        <ul>
+          <li>Electron apps that nest their bundle a directory deeper, as Postman does, no longer show an Unknown version</li>
+          <li>Apps that keep package.json packed inside app.asar have their version read out of the archive</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.1.3" date="2026-09-02">
       <description translate="no">
         <p>Further icon detection fixes:</p>
