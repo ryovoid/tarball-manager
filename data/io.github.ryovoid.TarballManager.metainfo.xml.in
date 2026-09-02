@@ -21,6 +21,19 @@
     <color type="primary" scheme_preference="dark">#6366f1</color>
   </branding>
   <releases>
+    <release version="0.1.5" date="2026-09-02">
+      <description translate="no">
+        <p>A redesigned interface:</p>
+        <ul>
+          <li>The app follows your system accent colour and light or dark preference, and adapts down to narrow windows</li>
+          <li>The library shows every installed app with its icon, update badge and search</li>
+          <li>A tarball can be dropped anywhere on the window</li>
+          <li>The install wizard keeps its next action in view, and offers to launch what it just installed</li>
+          <li>App details lead with the app itself, with Launch and copyable install paths</li>
+          <li>Keyboard shortcuts, and the window reopens at the size you left it</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.1.4" date="2026-09-02">
       <description translate="no">
         <p>Application version detection fixes:</p>

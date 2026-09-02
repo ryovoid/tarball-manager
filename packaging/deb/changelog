@@ -1,3 +1,17 @@
+tarball-manager (0.1.5-1) unstable; urgency=medium
+
+  * Redesigned interface: follows the system accent colour and light/dark
+    preference, and adapts down to narrow windows.
+  * The library lists installed apps with icons, update badges and search,
+    and a tarball can be dropped anywhere on the window.
+  * The install wizard keeps Back and Install in view, and offers to launch
+    the app once it is installed.
+  * App details lead with the app itself, with Launch and copyable paths.
+  * Keyboard shortcuts window, and the window reopens at its last size.
+  * The terminal command row on the details page renders again.
+
+ -- ryovoid <rp6502293@gmail.com>  Wed, 02 Sep 2026 12:00:00 +0000
+
 tarball-manager (0.1.4-1) unstable; urgency=medium
 
   * Electron applications that nest their bundle a directory deeper, such
