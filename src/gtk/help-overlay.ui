@@ -8,6 +8,29 @@
         <property name="max-height">10</property>
         <child>
           <object class="GtkShortcutsGroup">
+            <property name="title" translatable="yes" context="shortcut window">Library</property>
+            <child>
+              <object class="GtkShortcutsShortcut">
+                <property name="title" translatable="yes" context="shortcut window">Install an App</property>
+                <property name="action-name">win.install-app</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkShortcutsShortcut">
+                <property name="title" translatable="yes" context="shortcut window">Check All for Updates</property>
+                <property name="action-name">win.check-updates</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkShortcutsShortcut">
+                <property name="title" translatable="yes" context="shortcut window">Search Installed Apps</property>
+                <property name="action-name">win.search</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkShortcutsGroup">
             <property name="title" translatable="yes" context="shortcut window">General</property>
             <child>
               <object class="GtkShortcutsShortcut">

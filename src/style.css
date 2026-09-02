@@ -1,317 +1,299 @@
-/* style.css — Tarball Manager custom styles */
+/* style.css — Tarball Manager design system
+ *
+ * Everything here is built on libadwaita's own named colours, so the app
+ * follows the user's accent colour and light/dark preference instead of
+ * hardcoding a palette. Three ideas carry the whole visual language:
+ *
+ *   1. Tiles   — rounded, faintly outlined surfaces that hold app icons.
+ *   2. Pills   — small capsules for version, scope and update status.
+ *   3. Accent  — one colour, used sparingly, for the path forward.
+ */
+
+/* ═══════════════════════════════════════════
+   Typography
+   ═══════════════════════════════════════════ */
+
+.tm-display {
+    font-size: 21px;
+    font-weight: 800;
+    letter-spacing: -0.4px;
+}
+
+.tm-title {
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.tm-section {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: alpha(@window_fg_color, 0.55);
+}
+
+.tm-subtitle {
+    font-size: 13px;
+    color: alpha(@window_fg_color, 0.6);
+}
+
+.tm-caption {
+    font-size: 12px;
+    color: alpha(@window_fg_color, 0.5);
+}
+
+.tm-mono {
+    font-family: monospace;
+    font-size: 12px;
+}
+
+/* ═══════════════════════════════════════════
+   Icon tiles
+   ═══════════════════════════════════════════ */
+
+.tm-icon-tile {
+    border-radius: 12px;
+    background: alpha(@window_fg_color, 0.05);
+    box-shadow: inset 0 0 0 1px alpha(@window_fg_color, 0.07);
+    padding: 6px;
+}
+
+.tm-icon-tile.large {
+    border-radius: 18px;
+    padding: 10px;
+}
+
+.tm-icon-tile.accent {
+    background: alpha(@accent_bg_color, 0.13);
+    box-shadow: inset 0 0 0 1px alpha(@accent_bg_color, 0.22);
+    color: @accent_color;
+}
+
+/* ═══════════════════════════════════════════
+   Pills
+   ═══════════════════════════════════════════ */
+
+.tm-pill {
+    font-size: 12px;
+    font-weight: 700;
+    padding: 2px 10px;
+    min-height: 20px;
+    border-radius: 999px;
+    background: alpha(@window_fg_color, 0.08);
+    color: alpha(@window_fg_color, 0.72);
+}
+
+.tm-pill.accent {
+    background: alpha(@accent_bg_color, 0.16);
+    color: @accent_color;
+}
+
+.tm-pill.success {
+    background: alpha(@success_color, 0.16);
+    color: @success_color;
+}
+
+.tm-pill.warning {
+    background: alpha(@warning_color, 0.18);
+    color: @warning_color;
+}
+
+.tm-pill.error {
+    background: alpha(@error_color, 0.16);
+    color: @error_color;
+}
+
+.tm-pill.outline {
+    background: none;
+    box-shadow: inset 0 0 0 1px alpha(@window_fg_color, 0.16);
+    color: alpha(@window_fg_color, 0.6);
+    font-weight: 600;
+}
+
+/* ═══════════════════════════════════════════
+   Hero — app identity strip
+   ═══════════════════════════════════════════ */
+
+.tm-hero {
+    padding: 20px 20px 22px 20px;
+    border-radius: 16px;
+    background: alpha(@window_fg_color, 0.04);
+    box-shadow: inset 0 0 0 1px alpha(@window_fg_color, 0.06);
+}
+
+.tm-hero-name {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.4px;
+}
 
 /* ═══════════════════════════════════════════
    Step indicator
    ═══════════════════════════════════════════ */
 
-.step-indicator {
-    margin-top: 8px;
-    margin-bottom: 16px;
+.tm-steps {
+    margin-top: 4px;
+    margin-bottom: 18px;
 }
 
-.step-badge {
-    min-width: 28px;
-    min-height: 28px;
-    border-radius: 50%;
-    font-size: 13px;
+.tm-step-badge {
+    min-width: 24px;
+    min-height: 24px;
+    border-radius: 999px;
+    font-size: 12px;
     font-weight: 700;
     padding: 0;
+    background: alpha(@window_fg_color, 0.1);
+    color: alpha(@window_fg_color, 0.45);
+    transition: background 200ms ease, color 200ms ease;
 }
 
-.step-badge.active {
-    background: #6366f1;
-    color: white;
+.tm-step-badge.active {
+    background: @accent_bg_color;
+    color: @accent_fg_color;
+    box-shadow: 0 0 0 4px alpha(@accent_bg_color, 0.18);
 }
 
-.step-badge.completed {
-    background: #22c55e;
-    color: white;
+.tm-step-badge.done {
+    background: alpha(@accent_bg_color, 0.2);
+    color: @accent_color;
 }
 
-.step-badge.inactive {
-    background: alpha(@window_fg_color, 0.12);
-    color: alpha(@window_fg_color, 0.5);
+.tm-step-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: alpha(@window_fg_color, 0.45);
+    transition: color 200ms ease;
 }
 
-.step-label {
-    font-size: 13px;
-    font-weight: 500;
-}
-
-.step-label.active {
-    color: #6366f1;
+.tm-step-label.active {
+    color: @window_fg_color;
     font-weight: 700;
 }
 
-.step-label.completed {
-    color: #22c55e;
+.tm-step-label.done {
+    color: alpha(@window_fg_color, 0.65);
 }
 
-.step-label.inactive {
-    color: alpha(@window_fg_color, 0.45);
-}
-
-.step-connector {
+.tm-step-track {
     min-height: 2px;
-    min-width: 40px;
-    background: alpha(@window_fg_color, 0.15);
-    border-radius: 1px;
-    margin-top: 1px;
-    margin-bottom: 1px;
+    min-width: 16px;
+    border-radius: 2px;
+    background: alpha(@window_fg_color, 0.12);
+    transition: background 200ms ease;
 }
 
-.step-connector.completed {
-    background: #22c55e;
+.tm-step-track.done {
+    background: alpha(@accent_bg_color, 0.5);
 }
 
 /* ═══════════════════════════════════════════
    Drop zone
    ═══════════════════════════════════════════ */
 
-.drop-zone {
-    border: 2px dashed alpha(@window_fg_color, 0.2);
-    border-radius: 16px;
-    padding: 48px 24px;
+.tm-dropzone {
+    border: 2px dashed alpha(@window_fg_color, 0.18);
+    border-radius: 20px;
+    padding: 32px 24px;
     background: alpha(@window_fg_color, 0.02);
-    transition: all 200ms ease;
+    transition: border-color 150ms ease, background 150ms ease;
 }
 
-.drop-zone:hover,
-.drop-zone.drag-hover {
-    border-color: #6366f1;
-    background: alpha(#6366f1, 0.06);
+.tm-dropzone:hover {
+    border-color: alpha(@accent_bg_color, 0.55);
+    background: alpha(@accent_bg_color, 0.04);
 }
 
-.drop-zone-icon {
-    color: #6366f1;
-    margin-bottom: 12px;
+.tm-dropzone.drag-over {
+    border-color: @accent_bg_color;
+    border-style: solid;
+    background: alpha(@accent_bg_color, 0.1);
 }
 
-.drop-zone-title {
-    font-size: 16px;
+.tm-dropzone-title {
+    font-size: 17px;
     font-weight: 700;
-    margin-bottom: 4px;
-}
-
-.drop-zone-subtitle {
-    font-size: 13px;
-    color: alpha(@window_fg_color, 0.55);
 }
 
 /* ═══════════════════════════════════════════
-   Content cards (review, configure, install)
+   Cards
    ═══════════════════════════════════════════ */
 
-.content-card {
-    border: 1px dashed alpha(@window_fg_color, 0.15);
+.tm-card {
     border-radius: 16px;
     padding: 24px;
-    background: alpha(@window_fg_color, 0.02);
+    background: alpha(@window_fg_color, 0.035);
+    box-shadow: inset 0 0 0 1px alpha(@window_fg_color, 0.06);
 }
 
-.card-heading {
-    font-size: 16px;
+.tm-progress-title {
+    font-size: 17px;
     font-weight: 700;
-    margin-bottom: 16px;
+    margin-top: 18px;
 }
 
-.detail-row {
-    padding: 12px 0;
-    border-bottom: 1px solid alpha(@window_fg_color, 0.08);
-}
-
-.detail-row:last-child {
-    border-bottom: none;
-}
-
-.detail-label {
-    font-size: 14px;
-    color: alpha(@window_fg_color, 0.7);
-}
-
-.detail-value {
-    font-size: 14px;
-    font-weight: 500;
-}
-
-/* ═══════════════════════════════════════════
-   Analyzing / progress state
-   ═══════════════════════════════════════════ */
-
-.analyzing-card {
-    border: 1px dashed alpha(@window_fg_color, 0.15);
-    border-radius: 16px;
-    padding: 48px 32px;
-    background: alpha(@window_fg_color, 0.02);
-}
-
-.analyzing-title {
-    font-size: 18px;
-    font-weight: 700;
-    margin-top: 16px;
-}
-
-.analyzing-subtitle {
-    font-size: 13px;
-    color: alpha(@window_fg_color, 0.55);
-    margin-top: 4px;
-}
-
-/* Progress bar accent */
-progressbar > trough > progress {
-    background: linear-gradient(to right, #6366f1, #818cf8);
-    border-radius: 4px;
-    min-height: 6px;
-}
-
+/* Progress bars pick up the accent instead of a fixed indigo */
 progressbar > trough {
-    background: alpha(@window_fg_color, 0.1);
-    border-radius: 4px;
     min-height: 6px;
+    border-radius: 999px;
+    background: alpha(@window_fg_color, 0.1);
+}
+
+progressbar > trough > progress {
+    min-height: 6px;
+    border-radius: 999px;
+    background: @accent_bg_color;
 }
 
 /* ═══════════════════════════════════════════
-   Buttons
+   Bottom action bar
    ═══════════════════════════════════════════ */
 
-.btn-primary {
-    background: #6366f1;
-    color: white;
-    font-weight: 600;
-    border-radius: 10px;
-    padding: 8px 24px;
-    min-height: 36px;
-    border: none;
-}
-
-.btn-primary:hover {
-    background: #5558e6;
-}
-
-.btn-primary:active {
-    background: #4f46e5;
-}
-
-.btn-secondary {
-    background: alpha(@window_fg_color, 0.08);
-    color: @window_fg_color;
-    font-weight: 600;
-    border-radius: 10px;
-    padding: 8px 24px;
-    min-height: 36px;
-    border: none;
-}
-
-.btn-secondary:hover {
-    background: alpha(@window_fg_color, 0.12);
-}
-
-.btn-success {
-    background: #22c55e;
-    color: white;
-    font-weight: 600;
-    border-radius: 10px;
-    padding: 8px 24px;
-    min-height: 36px;
-    border: none;
+.tm-action-bar {
+    padding: 12px 24px;
+    background: @headerbar_bg_color;
+    box-shadow: inset 0 1px alpha(@window_fg_color, 0.09);
 }
 
 /* ═══════════════════════════════════════════
-   Install success / failure
+   Rows
    ═══════════════════════════════════════════ */
 
-.success-icon {
-    color: #22c55e;
-    margin-bottom: 8px;
+.tm-app-row {
+    min-height: 62px;
 }
 
-.error-icon {
-    color: #ef4444;
-    margin-bottom: 8px;
+/* Keeps a destructive row's icon and label reading as one unit */
+.tm-destructive-row {
+    color: @error_color;
 }
 
-.success-title {
-    font-size: 20px;
-    font-weight: 700;
-    margin-bottom: 4px;
-}
-
-.success-subtitle {
-    font-size: 14px;
-    color: alpha(@window_fg_color, 0.6);
-    margin-bottom: 20px;
+.tm-destructive-row > * > * > .title {
+    color: @error_color;
 }
 
 /* ═══════════════════════════════════════════
-   Page title area
+   Empty state
    ═══════════════════════════════════════════ */
 
-.page-title {
-    font-size: 26px;
-    font-weight: 800;
+.tm-empty-icon {
+    color: alpha(@window_fg_color, 0.3);
 }
 
-.page-subtitle {
-    font-size: 14px;
-    color: alpha(@window_fg_color, 0.6);
-    margin-top: 2px;
-}
-
-/* ═══════════════════════════════════════════
-   Browse button inside drop zone
-   ═══════════════════════════════════════════ */
-
-.browse-link {
-    color: #6366f1;
-    font-weight: 600;
-    text-decoration: underline;
-    padding: 4px 8px;
-    background: none;
-    border: none;
-    min-height: 0;
-}
-
-.browse-link:hover {
-    color: #818cf8;
+/* A quiet reminder at the foot of the library that dropping works anywhere */
+.tm-dropzone.subtle {
+    border-width: 1px;
+    border-color: alpha(@window_fg_color, 0.14);
+    border-radius: 999px;
+    padding: 10px 20px;
     background: none;
 }
 
-/* ═══════════════════════════════════════════
-   Dashboard — app list rows
-   ═══════════════════════════════════════════ */
-
-.app-row-icon {
-    margin: 8px;
-    border-radius: 8px;
+/* Outcome colour on the install result page */
+.tm-status-success image.icon {
+    color: @success_color;
 }
 
-.app-status-badge {
-    font-size: 12px;
-    font-weight: 700;
-    padding: 2px 10px;
-    border-radius: 12px;
-    margin-right: 4px;
+.tm-status-error image.icon {
+    color: @error_color;
 }
-
-.badge-update {
-    background: alpha(#f59e0b, 0.15);
-    color: #f59e0b;
-}
-
-.badge-ok {
-    background: alpha(#22c55e, 0.15);
-    color: #22c55e;
-}
-
-/* ═══════════════════════════════════════════
-   Detail page — action rows
-   ═══════════════════════════════════════════ */
-
-.destructive-action-row {
-    color: #ef4444;
-}
-
-.update-action-row {
-    color: #6366f1;
-}
-

@@ -39,6 +39,7 @@ tarball_manager_sources = [
   'update_checker.py',
   'dashboard_page.py',
   'detail_page.py',
+  'widgets.py',
 ]
 
 install_data(tarball_manager_sources, install_dir: moduledir)
