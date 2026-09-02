@@ -20,11 +20,21 @@ GOOD_PATH_HINTS = (
 # Directories that usually hold web assets, theme previews or bundled
 # third-party art rather than the application icon.
 BAD_PATH_HINTS = (
-    'out/media', '/assets/', '/extensions/', 'node_modules', '/locales/',
+    'out/media', '/extensions/', 'node_modules', '/locales/',
     '/www/', '/test/', '/tests/', '/doc/', '/docs/', '/sample', '/theme',
 )
 
 GOOD_NAME_HINTS = ('icon', 'logo', 'app')
+
+# Filenames that describe interface artwork rather than the application icon.
+BAD_NAME_HINTS = (
+    'sprite', 'avatar', 'illustration', 'placeholder', 'badge', 'overlay',
+    'thumbnail', 'background', 'splash', 'banner', 'screenshot', 'favicon',
+)
+
+# Web bundlers append a content hash, e.g. 'iconSprites-71d96f90683dd29d'.
+# Application icons are never named that way.
+_HASHED_NAME_RE = re.compile(r'-[0-9a-f]{8,}$')
 
 # SVGs are read in full for the fake-icon check; real icons are never huge.
 MAX_SVG_SCAN_BYTES = 2 * 1024 * 1024
@@ -33,6 +43,7 @@ _RASTER_DATA_URI_RE = re.compile(r'data:image/(?:png|jpe?g|webp|gif);base64,', r
 _PATH_TAG_RE = re.compile(r'<path\b([^>]*)>', re.I)
 _RECT_TAG_RE = re.compile(r'<rect\b([^>]*)>', re.I)
 _SHAPE_TAG_RE = re.compile(r'<(?:circle|ellipse|polygon|polyline|text)\b', re.I)
+_SYMBOL_TAG_RE = re.compile(r'<(?:symbol|use)\b', re.I)
 _FILL_COLOR_RE = re.compile(r'fill\s*=\s*"#([0-9a-fA-F]{3,6})"')
 _PATH_DATA_RE = re.compile(r'\bd\s*=\s*"([^"]*)"')
 
@@ -167,6 +178,23 @@ def is_fake_vector_icon(path):
     return False
 
 
+def is_sprite_sheet(path):
+    """True when an .svg packs many glyphs rather than one icon.
+
+    Web bundlers merge interface icons into a single sprite sheet of
+    <symbol> elements. Installed as an app icon it renders as a jumble.
+    """
+    try:
+        if os.path.getsize(path) > MAX_SVG_SCAN_BYTES:
+            return True  # far too large to be a single icon
+        with open(path, 'r', errors='replace') as f:
+            content = f.read()
+    except OSError:
+        return False
+
+    return len(_SYMBOL_TAG_RE.findall(content)) >= 2
+
+
 def _score_icon(icon, app_name=None):
     """Scores an icon candidate — higher is a better application icon."""
     path_lower = icon['path'].replace(os.sep, '/').lower()
@@ -185,8 +213,14 @@ def _score_icon(icon, app_name=None):
             score += 30
         elif base in stem or stem in base:
             score += 15
-    if any(hint in stem for hint in GOOD_NAME_HINTS):
+    if stem in GOOD_NAME_HINTS or stem in ('appicon', 'app-icon', 'app_icon'):
+        score += 25  # a file simply called 'icon' is almost always the one
+    elif any(hint in stem for hint in GOOD_NAME_HINTS):
         score += 10
+    if any(hint in stem for hint in BAD_NAME_HINTS):
+        score -= 50
+    if _HASHED_NAME_RE.search(stem):
+        score -= 40
 
     if icon['ext'] == '.svg':
         score += 20  # resolution independent
@@ -219,8 +253,8 @@ def find_best_icon(app_root_dir, app_name=None):
     """Finds the best icon in the app directory.
 
     Candidates are scored on location, filename, format and pixel size;
-    SVGs that are only raster wrappers (see is_fake_vector_icon) are
-    skipped in favour of a real PNG.
+    SVGs that are only raster wrappers (see is_fake_vector_icon) or sprite
+    sheets (see is_sprite_sheet) are skipped in favour of a real PNG.
     Returns {'path': str, 'ext': str, 'size_dir': str} or None.
     """
     icons = scan_for_icons(app_root_dir)
@@ -235,7 +269,8 @@ def find_best_icon(app_root_dir, app_name=None):
     # the first candidate that is not a raster wrapper wins.
     best = icons[0]
     for icon in icons:
-        if icon['ext'] == '.svg' and is_fake_vector_icon(icon['path']):
+        if icon['ext'] == '.svg' and (is_fake_vector_icon(icon['path'])
+                                      or is_sprite_sheet(icon['path'])):
             continue
         best = icon
         break

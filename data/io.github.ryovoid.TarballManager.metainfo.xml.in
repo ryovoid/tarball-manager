@@ -26,6 +26,7 @@
         <p>Fixes for application icons and taskbar identity:</p>
         <ul>
           <li>Icon detection no longer picks SVGs that only wrap a bitmap, which installed as a dark square</li>
+          <li>Icon detection no longer picks sprite sheets or bundler artwork over the real icon</li>
           <li>Generated desktop entries carry StartupWMClass, so the running window shows the app icon in the taskbar on Wayland</li>
           <li>Desktop entries are named after the app id the window reports</li>
         </ul>
