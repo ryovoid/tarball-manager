@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: MIT
 
 import os
+import re
 import subprocess
 
 
@@ -11,9 +12,23 @@ def format_display_name(app_name):
     return ' '.join(word.capitalize() for word in app_name.split('-'))
 
 
+def sanitize_desktop_id(value):
+    """Turns a WM class / app id into a safe .desktop basename.
+
+    'Antigravity IDE' -> 'antigravity-ide'. Returns '' if nothing is left.
+    """
+    cleaned = re.sub(r'[^a-z0-9._-]+', '-', (value or '').strip().lower())
+    return cleaned.strip('-.')
+
+
 def generate_desktop_entry(name, exec_path, icon, categories='Utility;',
-                           comment='', terminal=False):
-    """Generates the content of a .desktop file."""
+                           comment='', terminal=False, wm_class=''):
+    """Generates the content of a .desktop file.
+
+    wm_class becomes StartupWMClass, which desktop environments use to match
+    a running window (its Wayland app_id) back to this entry — without it
+    the taskbar shows a generic fallback icon.
+    """
     # Quote exec path if it contains spaces (freedesktop spec)
     if ' ' in exec_path:
         quoted_exec = f'"{exec_path}" %f'
@@ -34,12 +49,17 @@ def generate_desktop_entry(name, exec_path, icon, categories='Utility;',
         f'Categories={categories}',
         'StartupNotify=true',
     ])
+    if wm_class:
+        lines.append(f'StartupWMClass={wm_class}')
     return '\n'.join(lines) + '\n'
 
 
-def write_desktop_entry(app_name, scope, **kwargs):
+def write_desktop_entry(app_name, scope, desktop_id=None, **kwargs):
     """Writes a .desktop file to the correct directory.
 
+    desktop_id overrides the basename — pass the app's WM class / app_id so
+    the filename matches what the running window reports, which is the other
+    way desktop environments resolve a window to its entry.
     Returns the absolute path to the written file.
     """
     if scope == 'system':
@@ -48,7 +68,8 @@ def write_desktop_entry(app_name, scope, **kwargs):
         apps_dir = os.path.expanduser('~/.local/share/applications')
 
     os.makedirs(apps_dir, exist_ok=True)
-    desktop_path = os.path.join(apps_dir, f'{app_name}.desktop')
+    basename = sanitize_desktop_id(desktop_id) or app_name
+    desktop_path = os.path.join(apps_dir, f'{basename}.desktop')
 
     content = generate_desktop_entry(**kwargs)
     with open(desktop_path, 'w') as f:
