@@ -2,9 +2,11 @@
 # Copyright (c) 2026 ryovoid
 # SPDX-License-Identifier: MIT
 
+import glob
 import json
 import os
 import shutil
+import struct
 import subprocess
 import sys
 import threading
@@ -25,6 +27,55 @@ ELECTRON_MARKERS = (
 
 # Extensions of launcher wrappers — stripped when deriving a WM class.
 LAUNCHER_EXTENSIONS = ('.sh', '.bin', '.run', '.py', '.appimage')
+
+
+def _metadata_candidates(app_root, relative):
+    """Expands a relative metadata path at the tarball root and one level deeper.
+
+    Some bundles (Postman, for one) nest the whole application under app/, so
+    the familiar Electron/Mozilla paths sit a directory below the root.
+    """
+    paths = []
+    for pattern in (relative, os.path.join('*', relative)):
+        paths.extend(sorted(glob.glob(os.path.join(app_root, pattern))))
+    return [p for p in paths if os.path.isfile(p)]
+
+
+def _clean_version(value):
+    """Returns a non-empty version string, or None."""
+    if isinstance(value, str) and value.strip():
+        return value.strip()
+    return None
+
+
+def _version_from_package_json(path):
+    """Reads the version field out of a package.json."""
+    try:
+        with open(path, 'r', errors='replace') as f:
+            return _clean_version(json.load(f).get('version'))
+    except (OSError, ValueError):
+        return None
+
+
+def _version_from_asar(path):
+    """Reads package.json's version out of an Electron app.asar archive.
+
+    An asar opens with two Chromium pickles: uint32 4, uint32 header size,
+    uint32 payload size, uint32 JSON length, then the JSON directory listing.
+    File contents follow it, at offsets relative to 8 + header size.
+    """
+    try:
+        with open(path, 'rb') as f:
+            _, header_size, _, json_len = struct.unpack('<4I', f.read(16))
+            listing = json.loads(f.read(json_len).decode('utf-8', 'replace'))
+            entry = listing.get('files', {}).get('package.json') or {}
+            if 'offset' not in entry:
+                return None
+            f.seek(8 + header_size + int(entry['offset']))
+            data = json.loads(f.read(int(entry['size'])).decode('utf-8', 'replace'))
+            return _clean_version(data.get('version'))
+    except (OSError, ValueError, struct.error, TypeError):
+        return None
 
 
 def _get_install_dir(scope, app_name):
@@ -203,16 +254,19 @@ class InstallService:
         Checks (in order):
         1. application.ini (Mozilla/Zen: Version=X.Y.Z)
         2. package.json (Electron apps: "version": "X.Y.Z")
-        3. version / VERSION / VERSION.txt files
-        4. *.desktop files (X-AppVersion=)
+        3. app.asar (Electron apps that ship package.json packed)
+        4. version / VERSION / VERSION.txt files
+        5. *.desktop files (X-AppVersion=)
+
+        Every location is looked for at the tarball root and one directory
+        deeper, since some bundles nest the application under app/.
 
         Returns version string or None.
         """
         import re
 
         # 1. application.ini (Mozilla-based apps like Zen, Firefox, Thunderbird)
-        ini_path = os.path.join(app_root, 'application.ini')
-        if os.path.isfile(ini_path):
+        for ini_path in _metadata_candidates(app_root, 'application.ini'):
             try:
                 with open(ini_path, 'r', errors='replace') as f:
                     for line in f:
@@ -222,25 +276,22 @@ class InstallService:
             except OSError:
                 pass
 
-        # 2. package.json (Electron apps like VS Code, Kiro, Obsidian)
-        pkg_path = os.path.join(app_root, 'resources', 'app', 'package.json')
-        if not os.path.isfile(pkg_path):
-            pkg_path = os.path.join(app_root, 'package.json')
-        if os.path.isfile(pkg_path):
-            try:
-                import json
-                with open(pkg_path, 'r', errors='replace') as f:
-                    data = json.load(f)
-                    ver = data.get('version', '')
-                    if ver:
-                        return ver
-            except (OSError, json.JSONDecodeError):
-                pass
+        # 2. package.json (Electron apps like VS Code, Kiro, Obsidian, Postman)
+        for relative in ('resources/app/package.json', 'package.json'):
+            for pkg_path in _metadata_candidates(app_root, relative):
+                version = _version_from_package_json(pkg_path)
+                if version:
+                    return version
 
-        # 3. version / VERSION / VERSION.txt files
+        # 3. app.asar — Electron apps that keep package.json packed
+        for asar_path in _metadata_candidates(app_root, 'resources/app.asar'):
+            version = _version_from_asar(asar_path)
+            if version:
+                return version
+
+        # 4. version / VERSION / VERSION.txt files
         for name in ('version', 'VERSION', 'VERSION.txt', 'version.txt'):
-            vpath = os.path.join(app_root, name)
-            if os.path.isfile(vpath):
+            for vpath in _metadata_candidates(app_root, name):
                 try:
                     with open(vpath, 'r', errors='replace') as f:
                         ver = f.read().strip()
@@ -250,18 +301,17 @@ class InstallService:
                 except OSError:
                     pass
 
-        # 4. .desktop files with X-AppVersion
-        for entry in os.listdir(app_root):
-            if entry.endswith('.desktop'):
-                try:
-                    with open(os.path.join(app_root, entry), 'r', errors='replace') as f:
-                        for line in f:
-                            if line.strip().startswith('X-AppVersion='):
-                                ver = line.strip().split('=', 1)[1].strip()
-                                if ver:
-                                    return ver
-                except OSError:
-                    pass
+        # 5. .desktop files with X-AppVersion
+        for dpath in _metadata_candidates(app_root, '*.desktop'):
+            try:
+                with open(dpath, 'r', errors='replace') as f:
+                    for line in f:
+                        if line.strip().startswith('X-AppVersion='):
+                            ver = line.strip().split('=', 1)[1].strip()
+                            if ver:
+                                return ver
+            except OSError:
+                pass
 
         return None
 
