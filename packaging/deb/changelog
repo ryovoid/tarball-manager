@@ -1,0 +1,30 @@
+tarball-manager (0.1.2-2) unstable; urgency=medium
+
+  * Icon scanning no longer aborts the whole analysis when the tarball
+    contains a broken symlink pointing at an icon file.
+
+ -- ryovoid <rp6502293@gmail.com>  Sun, 30 Aug 2026 12:00:00 +0000
+
+tarball-manager (0.1.2-1) unstable; urgency=medium
+
+  * Icon detection skips SVGs that only wrap an embedded bitmap, which
+    installed as a dark square instead of the app icon.
+  * Icon candidates are ranked by location, filename and real pixel size.
+  * Generated desktop entries set StartupWMClass and are named after the
+    app id the running window reports, fixing the Wayland fallback icon
+    in the taskbar.
+
+ -- ryovoid <rp6502293@gmail.com>  Sun, 30 Aug 2026 00:00:00 +0000
+
+tarball-manager (0.1.1-1) unstable; urgency=medium
+
+  * System-scope updates and large tarball extraction fixes.
+  * Custom application logo support.
+
+ -- ryovoid <rp6502293@gmail.com>  Sun, 02 Aug 2026 00:00:00 +0000
+
+tarball-manager (0.1.0-1) unstable; urgency=medium
+
+  * Initial release.
+
+ -- ryovoid <rp6502293@gmail.com>  Tue, 28 Jul 2026 00:00:00 +0000
