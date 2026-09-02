@@ -23,14 +23,16 @@ Many Linux apps like **Zen Browser**, **Blender**, **Firefox**, and **Thunderbir
 
 ## Features
 
-- 🧙 **4-Step Wizard** — Select → Review → Configure → Install
+- 🧙 **4-Step Wizard** — Select → Review → Configure → Install, with the next action always pinned in view
+- 📚 **App Library** — Everything you installed in one list, with update badges, search, and one-click launch
 - 🔍 **Smart Detection** — Automatically finds the main binary (ELF magic-byte detection), app icon, version, and architecture
-- 📂 **Drag & Drop** — Drop a `.tar.gz`, `.tar.xz`, or `.tar.bz2` right onto the window
+- 📂 **Drag & Drop** — Drop a `.tar.gz`, `.tar.xz`, or `.tar.bz2` anywhere on the window, library included
 - 🏠 **User or System-Wide** — Install just for yourself (`~/.local`) or for all users (`/opt`) with a native password prompt
 - 🖼️ **Icon Handling** — Finds the best icon (SVG preferred) and installs it to the correct `hicolor` theme directory
 - 🚀 **Desktop Integration** — Generates a proper `.desktop` launcher so the app shows up in your application menu
 - 🔗 **PATH Symlink** — Optionally creates a command-line shortcut in your `$PATH`
 - 🗑️ **Clean Uninstall** — Tracks every installed file and removes them all cleanly
+- 🎨 **Native Look** — Follows your system accent colour, light/dark preference, and adapts down to narrow windows
 
 ## Installation
 
@@ -97,10 +99,10 @@ sudo ninja -C builddir uninstall
 ## Usage
 
 1. **Launch** — Open Tarball Manager from your app menu
-2. **Select** — Drag & drop a tarball onto the window, or click *browse files*
+2. **Select** — Drag & drop a tarball onto the window, or click *Browse Files*
 3. **Review** — The app extracts and analyzes the tarball, showing detected name, version, executable, size, and architecture
 4. **Configure** — Edit the app name, pick the right executable if multiple were found, choose a category, and select user or system-wide scope
-5. **Install** — Hit install and you're done. The app appears in your launcher immediately
+5. **Install** — Hit install and you're done. Launch it straight from the finish screen, or find it in your app menu
 
 ### Supported Formats
 

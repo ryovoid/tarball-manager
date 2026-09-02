@@ -3,4 +3,9 @@
 data/io.github.ryovoid.TarballManager.desktop.in
 data/io.github.ryovoid.TarballManager.gschema.xml
 data/io.github.ryovoid.TarballManager.metainfo.xml.in
+src/dashboard_page.py
+src/detail_page.py
+src/gtk/help-overlay.ui
+src/main.py
+src/widgets.py
 src/window.py
