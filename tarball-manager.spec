@@ -1,6 +1,6 @@
 Name:           tarball-manager
-Version:        0.1.2
-Release:        2%{?dist}
+Version:        0.1.3
+Release:        1%{?dist}
 Summary:        Install Linux app tarballs as desktop applications
 
 License:        MIT
@@ -66,6 +66,11 @@ appstream-util validate-relax --nonet \
 %{_datadir}/tarball_manager/
 
 %changelog
+* Wed Sep 02 2026 ryovoid <rp6502293@gmail.com> - 0.1.3-1
+- Sprite sheets and other bundler artwork no longer outrank the real
+  application icon
+- Icons kept in an assets directory are found again
+
 * Sun Aug 30 2026 ryovoid <rp6502293@gmail.com> - 0.1.2-2
 - Icon scanning no longer aborts the whole analysis when the tarball
   contains a broken symlink pointing at an icon file
