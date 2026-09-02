@@ -12,8 +12,19 @@ import threading
 from .tarball_extractor import extract_tarball
 from .binary_detector import detect_main_binary
 from .icon_handler import find_best_icon, install_icon
-from .desktop_entry_writer import write_desktop_entry, generate_desktop_entry, format_display_name
+from .desktop_entry_writer import write_desktop_entry, generate_desktop_entry, \
+    format_display_name, sanitize_desktop_id
 from .metadata_store import MetadataStore
+
+
+# Files an Electron bundle ships next to its root package.json.
+ELECTRON_MARKERS = (
+    'resources/app.asar', 'resources/app', 'chrome-sandbox',
+    'chrome_100_percent.pak', 'libffmpeg.so', 'icudtl.dat',
+)
+
+# Extensions of launcher wrappers — stripped when deriving a WM class.
+LAUNCHER_EXTENSIONS = ('.sh', '.bin', '.run', '.py', '.appimage')
 
 
 def _get_install_dir(scope, app_name):
@@ -134,10 +145,16 @@ class InstallService:
 
             app_name = derive_app_name(tarball_path)
             binary_result = detect_main_binary(app_root, app_name)
-            icon_info = find_best_icon(app_root)
+            icon_info = find_best_icon(app_root, app_name)
 
             # Check for existing .desktop file in the tarball
             existing_desktop = self._find_existing_desktop(app_root)
+
+            # WM class / app_id — needed so the desktop environment can match
+            # the running window to the .desktop entry (Wayland taskbar icon)
+            wm_class = self._detect_wm_class(
+                app_root, existing_desktop, binary_result.get('path')
+            )
 
             # Version: try filename first, then look inside extracted files
             version = derive_version(tarball_path)
@@ -169,6 +186,7 @@ class InstallService:
                 'binary': binary_result,
                 'icon': icon_info,
                 'existing_desktop': existing_desktop,
+                'wm_class': wm_class,
                 'temp_dir': temp_dir,
                 'app_root': app_root,
                 'tarball_path': tarball_path,
@@ -276,10 +294,51 @@ class InstallService:
                                 'icon': data.get('Icon', ''),
                                 'categories': data.get('Categories', ''),
                                 'comment': data.get('Comment', ''),
+                                'wm_class': data.get('StartupWMClass', ''),
                             }
                     except OSError:
                         continue
         return None
+
+    @staticmethod
+    def _detect_wm_class(app_root, existing_desktop=None, binary_path=None):
+        """Detects the WM class (Wayland app_id) the app will report.
+
+        Checks (in order):
+        1. StartupWMClass from a .desktop file shipped in the tarball
+        2. package.json "name" (Electron lowercases it and turns spaces into
+           hyphens to build the app_id)
+        3. The binary filename
+
+        Returns the WM class string, or '' if nothing could be detected.
+        """
+        if existing_desktop and existing_desktop.get('wm_class'):
+            return existing_desktop['wm_class'].strip()
+
+        # Electron apps: resources/app/package.json, else a root package.json
+        # (only trusted when the tarball actually looks like an Electron bundle
+        # — a stray package.json would give a bogus app_id).
+        pkg_path = os.path.join(app_root, 'resources', 'app', 'package.json')
+        if not os.path.isfile(pkg_path):
+            pkg_path = os.path.join(app_root, 'package.json')
+            if not any(os.path.exists(os.path.join(app_root, marker))
+                       for marker in ELECTRON_MARKERS):
+                pkg_path = None
+        if pkg_path and os.path.isfile(pkg_path):
+            try:
+                with open(pkg_path, 'r', errors='replace') as f:
+                    name = json.load(f).get('name', '')
+                if name:
+                    return name.strip().lower().replace(' ', '-')
+            except (OSError, json.JSONDecodeError, AttributeError):
+                pass
+
+        if binary_path:
+            base = os.path.basename(binary_path)
+            stem, ext = os.path.splitext(base)
+            return stem if ext.lower() in LAUNCHER_EXTENSIONS else base
+
+        return ''
 
     def install(self, analysis, config, on_progress=None):
         """Performs the actual installation using analyzed data + user config.
@@ -330,14 +389,19 @@ class InstallService:
             icon_dest = f'/usr/share/icons/hicolor/{size_dir}/apps/{app_name}{ext}'
             icon_name = app_name
 
-        # Generate .desktop content
+        # Generate .desktop content. StartupWMClass and a filename matching
+        # the app_id let the desktop environment resolve the running window.
+        wm_class = config.get('wm_class') or analysis.get('wm_class') or ''
+        desktop_id = sanitize_desktop_id(wm_class) or app_name
+
         desktop_content = generate_desktop_entry(
             name=display_name,
             exec_path=new_binary or '',
             icon=icon_name,
             categories=config.get('categories', 'Utility;'),
+            wm_class=wm_class,
         )
-        desktop_path = f'/usr/share/applications/{app_name}.desktop'
+        desktop_path = f'/usr/share/applications/{desktop_id}.desktop'
 
         # Symlink
         symlink_path = None
@@ -379,6 +443,7 @@ class InstallService:
                 'tarball_name': os.path.basename(analysis['tarball_path']),
                 'display_name': display_name,
                 'version': analysis.get('version', 'Unknown'),
+                'wm_class': wm_class,
             })
 
             if on_progress:
@@ -420,12 +485,15 @@ class InstallService:
 
             if on_progress:
                 on_progress('desktop', 'Creating desktop launcher…')
+            wm_class = config.get('wm_class') or analysis.get('wm_class') or ''
             desktop_path = write_desktop_entry(
                 app_name, scope,
+                desktop_id=wm_class,
                 name=display_name,
                 exec_path=new_binary or '',
                 icon=icon_result['icon_name'],
                 categories=config.get('categories', 'Utility;'),
+                wm_class=wm_class,
             )
 
             symlink_path = None
@@ -460,6 +528,7 @@ class InstallService:
                 'tarball_name': os.path.basename(analysis['tarball_path']),
                 'display_name': display_name,
                 'version': analysis.get('version', 'Unknown'),
+                'wm_class': wm_class,
             })
 
             if on_progress:
