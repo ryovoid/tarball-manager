@@ -1,5 +1,5 @@
 Name:           tarball-manager
-Version:        0.1.3
+Version:        0.1.4
 Release:        1%{?dist}
 Summary:        Install Linux app tarballs as desktop applications
 
@@ -66,6 +66,12 @@ appstream-util validate-relax --nonet \
 %{_datadir}/tarball_manager/
 
 %changelog
+* Wed Sep 02 2026 ryovoid <rp6502293@gmail.com> - 0.1.4-1
+- Electron applications that nest their bundle a directory deeper, such as
+  Postman, now report their version instead of Unknown
+- Applications that ship package.json packed inside app.asar have their
+  version read out of the archive
+
 * Wed Sep 02 2026 ryovoid <rp6502293@gmail.com> - 0.1.3-1
 - Sprite sheets and other bundler artwork no longer outrank the real
   application icon
